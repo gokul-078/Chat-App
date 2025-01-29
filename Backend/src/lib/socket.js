@@ -1,54 +1,37 @@
-// importing server from socket package...
-const { Server } = require("socket.io");
-// importing http package from node.js...
-const http = require("http");
-// importing express from express...
-const express = require('express');
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
 
-// Assigning express to a app variable...
 const app = express();
+const server = http.createServer(app);
 
-// Creating a server with the help of http modules...
-const server = http.createServer(app)
-
-// Now we give the created server inside the socket.io...
 const io = new Server(server, {
-    cors: {
-        origin: ["http://localhost:5173"]
-    }
-})
+  cors: {
+    origin: ["http://localhost:5173"],
+  },
+});
 
-
-const getReceiverSocketId = (userId) => {
-    return userSocketMap[userId];
+export function getReceiverSocketId(userId) {
+  return userSocketMap[userId];
 }
 
+// used to store online users
+const userSocketMap = {}; // {userId: socketId}
 
-// Used to store online user...
-const userSocketMap = {};  // {userId: socket.id}
-
-// Now checking for the connection and disconnect with the help of socket...
 io.on("connection", (socket) => {
-    console.log("A user connected", socket.id)
+  console.log("A user connected", socket.id);
 
-    const userId = socket.handshake.query.userId;
-    if(userId){
-        userSocketMap[userId] = socket.id
-    }
+  const userId = socket.handshake.query.userId;
+  if (userId) userSocketMap[userId] = socket.id;
 
-    // io.emit() is used to send events to all users...
-    io.emit("getOnlineUsers", Object.keys(userSocketMap))
+  // io.emit() is used to send events to all the connected clients
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-    socket.on("disconnect", () => {
-        console.log("A user is disconnected", socket.id)
-        delete userSocketMap[userId]
-        
-        io.emit("getOnlineUsers", Object.keys(userSocketMap))
+  socket.on("disconnect", () => {
+    console.log("A user disconnected", socket.id);
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
+});
 
-    })
-})
-
-
-
-
-module.exports = { io, app, server, getReceiverSocketId };
+export { io, app, server };

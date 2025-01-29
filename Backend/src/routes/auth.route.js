@@ -1,32 +1,15 @@
+import express from "express";
+import { checkAuth, login, logout, signup, updateProfile } from "../controllers/auth.controller.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 
-const express = require('express')
+const router = express.Router();
 
-// importing router from express module...
-const { Router } = require('express');
+router.post("/signup", signup);
+router.post("/login", login);
+router.post("/logout", logout);
 
-// importing the auth.controllers funtions file...
-const { signup, login, logout, updateProfile, checkAuth } = require('../controllers/auth.controller');
+router.put("/update-profile", protectRoute, updateProfile);
 
-// importing the auth.middleware file...
-const protectedRoute = require('../middlewares/auth.middleware');
+router.get("/check", protectRoute, checkAuth);
 
-// assigning a variable to the router...
-const router = Router();
-
-
-// creating the sigup, login and logout page routes...
-router.post("/signup", signup)
-router.post("/login", login)
-router.post("/logout", logout)
-
-// creating the updateProfile and it need to be authenticated so we provide the 'protectedRoute' middleware for checks...
-router.put("/update-profile", protectedRoute, updateProfile)
-
-// creating checkAuth router with protectedRoute for authentication to checking the user activity...
-router.get("/check", protectedRoute, checkAuth)
-
-
-
-
-
-module.exports = router
+export default router;
